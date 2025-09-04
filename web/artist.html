@@ -9,25 +9,34 @@
 
 <body>
 
-    <h2>ID: {{.jiji.Id}}</h2>
+
+    <h2>ID: {{.Liji.Id}}</h2>
     <h3>Locations:</h3>
+
     <ul>
-        {{range .jiji.Locations}}
-            <li>{{.}}</li>
+        {{range .Liji.Locations}}
+        <li>{{.}}</li>
+
         {{end}}
     </ul>
 
-    <h2>Name: {{.jaja.Name}}</h2>
-    <img src="{{.jaja.Image}}" alt="{{.jaja.Name}}" width="300">
+
+    <hr>
+
+    <!-- <h2>Artist ID: {{.Laja.Id}}</h2> -->
+    <h2>Name: {{.Laja.Name}}</h2>
+    <img src="{{.Laja.Image}}" alt="{{.Laja.Name}}" width="300">
+
     <h3>Members:</h3>
     <ul>
-        {{range .jaja.Members}}
+        {{range .Laja.Members}}
             <li>{{.}}</li>
         {{end}}
     </ul>
 
-    <h3>Creation Date: {{.jaja.CreationDate}}</h3>
-    <h3>First Album: {{.jaja.FirstAlbum}}</h3>
+    <h2>Year Created: {{.Laja.CreationDate}}</h2>
+    <h2>First Album: {{.Laja.FirstAlbum}}</h2>
+   <a href="home.html"><button><h1>HOME</h1></button></a>
 
 </body>
 
