@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>artist</title>
+</head>
+
+<body>
+
+    <h2>ID: {{.jiji.Id}}</h2>
+    <h3>Locations:</h3>
+    <ul>
+        {{range .jiji.Locations}}
+            <li>{{.}}</li>
+        {{end}}
+    </ul>
+
+    <h2>Name: {{.jaja.Name}}</h2>
+    <img src="{{.jaja.Image}}" alt="{{.jaja.Name}}" width="300">
+    <h3>Members:</h3>
+    <ul>
+        {{range .jaja.Members}}
+            <li>{{.}}</li>
+        {{end}}
+    </ul>
+
+    <h3>Creation Date: {{.jaja.CreationDate}}</h3>
+    <h3>First Album: {{.jaja.FirstAlbum}}</h3>
+
+</body>
+
+</html>
