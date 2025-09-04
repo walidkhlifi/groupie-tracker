@@ -12,7 +12,20 @@ import (
 type General struct {
  Liji Location 
  Laja Artist
+ Ddd Date
+ rel Relation
 }	
+
+
+type Relation struct {
+    Id      int      `json:"id"`
+    Relations []string `json:"datesLocations"`
+}
+
+type Date struct{
+	Id int  `json:"id"`
+	Dates []string `json:"dates"`
+}
 
 
 type Location struct {
@@ -36,6 +49,45 @@ type Artist struct {
 func Artistt(w http.ResponseWriter, r *http.Request) {
 nb:=r.URL.Query().Get("Id")
 
+if nb == "" {
+    http.Error(w, "Missing or invalid ID", http.StatusBadRequest)
+    return
+}
+//relation
+data3, en := http.Get("https://groupietrackers.herokuapp.com/api/relation/"+nb)
+
+	if en != nil {
+		http.Error(w, "rceive data", http.StatusInternalServerError)
+		return
+	}
+	defer data3.Body.Close()
+
+	var rr Relation
+	errr1 := json.NewDecoder(data3.Body).Decode(&rr)
+	if errr1 != nil {
+		fmt.Println("er4544")
+		return
+	}
+fmt.Println(rr)
+
+//date
+data2, err := http.Get("https://groupietrackers.herokuapp.com/api/dates/"+nb)
+
+	if err != nil {
+		http.Error(w, "rceive data", http.StatusInternalServerError)
+		return
+	}
+	defer data2.Body.Close()
+
+	var date Date
+
+	errr := json.NewDecoder(data2.Body).Decode(&date)
+	if errr != nil {
+		fmt.Println("errrrrrrrr555")
+		return
+	}
+
+	//artist
 		data, err := http.Get("https://groupietrackers.herokuapp.com/api/artists/"+nb)
 	if err != nil {
 		http.Error(w, "rceive data", http.StatusInternalServerError)
@@ -51,6 +103,7 @@ nb:=r.URL.Query().Get("Id")
 		return
 	}
 
+	// locations
 	data1, err := http.Get("https://groupietrackers.herokuapp.com/api/locations/"+nb)
 	if err != nil {
 		http.Error(w, "rceive data", http.StatusInternalServerError)
@@ -69,10 +122,10 @@ nb:=r.URL.Query().Get("Id")
 		dat := General{
 		Liji: genr,
 		Laja: ccc,
+		Ddd:date,
 	}
 
 
-fmt.Println(dat)
 	tmpl, err := template.ParseFiles("web/artist.html")
 if err != nil {
 	fmt.Println("Template Error:", err)
@@ -88,6 +141,7 @@ if err != nil {
 }
 }
 
+
 // 2222
 func Home(w http.ResponseWriter, r *http.Request) {
 	
@@ -96,10 +150,10 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		http.Error(w,"method not allowed",http.StatusMethodNotAllowed)
 		return
 	}
-    if r.URL.Path!="/"{
-		http.Error(w,"pâge not found",http.StatusNotFound)
-		return
-	}
+    // if r.URL.Path!="/"{
+	// 	http.Error(w,"pâge not found",http.StatusNotFound)
+	// 	return
+	// }
 
 
 
