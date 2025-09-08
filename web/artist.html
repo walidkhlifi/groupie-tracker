@@ -8,43 +8,54 @@
 </head>
 
 <body>
+    <h1>Artist ID: {{.Laja.Id}}</h1>
 
-
-    <h2>ID: {{.Liji.Id}}</h2>
-    <h3>Locations:</h3>
-
-    <ul>
-        {{range .Liji.Locations}}
-        <li>{{.}}</li>
-
-        {{end}}
-    </ul>
-
-<hr>
-<h2>id==>{{.Ddd.Id}}</h2>
-<ul>
-{{range .Ddd.Dates}}
-<li>{{.}}</li>
-{{end}}
-</ul>
-
-    <hr>
-
-    <!-- <h2>Artist ID: {{.Laja.Id}}</h2> -->
     <h2>Name: {{.Laja.Name}}</h2>
     <img src="{{.Laja.Image}}" alt="{{.Laja.Name}}" width="300">
 
     <h3>Members:</h3>
     <ul>
         {{range .Laja.Members}}
-            <li>{{.}}</li>
+        <li>{{.}}</li>
         {{end}}
     </ul>
 
     <h2>Year Created: {{.Laja.CreationDate}}</h2>
     <h2>First Album: {{.Laja.FirstAlbum}}</h2>
-   <a href="home.html"><button><h1>HOME</h1></button></a>
 
+    <hr>
+    <h3>Locations:</h3>
+
+    <ul>
+        {{range .Liji.Locations}}
+        <li>{{.}}</li>
+        {{end}}
+    </ul>
+
+    <ul>
+        {{range .Ddd.Dates}}
+        <li>{{.}}</li>
+        {{end}}
+    </ul>
+
+    <hr>
+    <h2>Relations</h2>
+<ul>
+    {{range $key, $value := .Rel.Relations}}
+        <li><strong>{{ $key }}:</strong>
+            <ul>
+                {{range .}}
+                    <li>{{.}}</li>
+                {{end}}
+            </ul>
+        </li>
+    {{end}}
+</ul>
+
+    <hr>
+    <a href="/"><button>
+            <h1>HOME</h1>
+        </button></a>
 </body>
 
 </html>

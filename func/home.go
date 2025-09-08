@@ -3,30 +3,27 @@ package groupietracker
 import (
 	"encoding/json"
 	"fmt"
-
-	// "fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 )
 
 type General struct {
- Liji Location 
- Laja Artist
- Ddd Date
- rel Relation
-}	
-
+	Liji Location
+	Laja Artist
+	Ddd  Date
+	Rel  Relation
+}
 
 type Relation struct {
-    Id      int      `json:"id"`
-    Relations []string `json:"datesLocations"`
+	Id        int                 `json:"id"`
+	Relations map[string][]string `json:"datesLocations"`
 }
 
-type Date struct{
-	Id int  `json:"id"`
+type Date struct {
+	Id    int      `json:"id"`
 	Dates []string `json:"dates"`
 }
-
 
 type Location struct {
 	Id        int      `json:"id"`
@@ -47,150 +44,142 @@ type Artist struct {
 
 // /111
 func Artistt(w http.ResponseWriter, r *http.Request) {
-nb:=r.URL.Query().Get("Id")
+	nb := r.URL.Query().Get("Id")
 
-if nb == "" {
-    http.Error(w, "Missing or invalid ID", http.StatusBadRequest)
-    return
-}
-//relation
-data3, en := http.Get("https://groupietrackers.herokuapp.com/api/relation/"+nb)
+	if nb == "" {
+		http.Error(w, "Missing or invalid 'Id' parameter", http.StatusBadRequest)
+		return
+	}
 
-	if en != nil {
-		http.Error(w, "rceive data", http.StatusInternalServerError)
+	id, err := strconv.Atoi(nb)
+	if err != nil || id < 1 || id > 52 {
+		http.Error(w, "Invalid 'Id' parameter. It must be an integer between 1 and 52.", http.StatusBadRequest)
+		return
+	}
+
+	// relation
+	data3, err := http.Get("https://groupietrackers.herokuapp.com/api/relation/" + nb)
+	if err != nil {
+		http.Error(w, "failed to receive data", http.StatusInternalServerError)
 		return
 	}
 	defer data3.Body.Close()
 
-	var rr Relation
-	errr1 := json.NewDecoder(data3.Body).Decode(&rr)
-	if errr1 != nil {
-		fmt.Println("er4544")
+	var hp Relation
+	err = json.NewDecoder(data3.Body).Decode(&hp)
+	if err != nil {
+		fmt.Println("error decoding JSON:", err)
+		http.Error(w, "failed to decode data", http.StatusInternalServerError)
 		return
 	}
-fmt.Println(rr)
 
-//date
-data2, err := http.Get("https://groupietrackers.herokuapp.com/api/dates/"+nb)
-
+	// date
+	data2, err := http.Get("https://groupietrackers.herokuapp.com/api/dates/" + nb)
 	if err != nil {
-		http.Error(w, "rceive data", http.StatusInternalServerError)
+		http.Error(w, "failed to receive date data", http.StatusInternalServerError)
 		return
 	}
 	defer data2.Body.Close()
 
 	var date Date
-
-	errr := json.NewDecoder(data2.Body).Decode(&date)
-	if errr != nil {
-		fmt.Println("errrrrrrrr555")
+	err = json.NewDecoder(data2.Body).Decode(&date)
+	if err != nil {
+		fmt.Println("error decoding date data:", err)
+		http.Error(w, "failed to decode date data", http.StatusInternalServerError)
 		return
 	}
 
-	//artist
-		data, err := http.Get("https://groupietrackers.herokuapp.com/api/artists/"+nb)
+	// artist
+	data, err := http.Get("https://groupietrackers.herokuapp.com/api/artists/" + nb)
 	if err != nil {
-		http.Error(w, "rceive data", http.StatusInternalServerError)
+		http.Error(w, "failed to receive artist data", http.StatusInternalServerError)
 		return
 	}
 	defer data.Body.Close()
 
 	var ccc Artist
-
-	er := json.NewDecoder(data.Body).Decode(&ccc)
-	if er != nil {
-		fmt.Println("errrrrrrrr")
+	err = json.NewDecoder(data.Body).Decode(&ccc)
+	if err != nil {
+		fmt.Println("error decoding artist data:", err)
+		http.Error(w, "failed to decode artist data", http.StatusInternalServerError)
 		return
 	}
 
 	// locations
-	data1, err := http.Get("https://groupietrackers.herokuapp.com/api/locations/"+nb)
+	data1, err := http.Get("https://groupietrackers.herokuapp.com/api/locations/" + nb)
 	if err != nil {
-		http.Error(w, "rceive data", http.StatusInternalServerError)
+		http.Error(w, "failed to receive location data", http.StatusInternalServerError)
 		return
 	}
 	defer data1.Body.Close()
 
-	
 	var genr Location
-
-	er = json.NewDecoder(data1.Body).Decode(&genr)
-	if er != nil {
-		fmt.Println(er)
+	err = json.NewDecoder(data1.Body).Decode(&genr)
+	if err != nil {
+		fmt.Println("error decoding location data:", err)
+		http.Error(w, "failed to decode location data", http.StatusInternalServerError)
 		return
 	}
-		dat := General{
+	/////////////////
+	dat := General{
 		Liji: genr,
 		Laja: ccc,
-		Ddd:date,
+		Ddd:  date,
+		Rel:  hp,
 	}
 
-
 	tmpl, err := template.ParseFiles("web/artist.html")
-if err != nil {
-	fmt.Println("Template Error:", err)
-	http.Error(w, "Template not found", http.StatusInternalServerError)
-	return
-}
+	if err != nil {
+		fmt.Println("Template Error:", err)
+		http.Error(w, "Template not found", http.StatusInternalServerError)
+		return
+	}
 
-err = tmpl.Execute(w, dat)
-if err != nil {
-	fmt.Println("Execute Error:", err)
-	http.Error(w, "Template execution error", http.StatusInternalServerError)
-	return
+	err = tmpl.Execute(w, dat)
+	if err != nil {
+		fmt.Println("Execute Error:", err)
+		http.Error(w, "Template execution error", http.StatusInternalServerError)
+		return
+	}
 }
-}
-
 
 // 2222
 func Home(w http.ResponseWriter, r *http.Request) {
-	
-
-	if r.Method!="GET"{
-		http.Error(w,"method not allowed",http.StatusMethodNotAllowed)
+	if r.Method != "GET" {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-    // if r.URL.Path!="/"{
-	// 	http.Error(w,"pâge not found",http.StatusNotFound)
-	// 	return
-	// }
-
-
-
+	if r.URL.Path != "/" {
+		http.Error(w, "pâge not found", http.StatusNotFound)
+		return
+	}
 
 	data, err := http.Get("https://groupietrackers.herokuapp.com/api/artists")
 	if err != nil {
-		http.Error(w, "rceive data", http.StatusInternalServerError)
+		http.Error(w, "Failed to retrieve data", http.StatusInternalServerError)
 		return
 	}
 	defer data.Body.Close()
-	var HOME []Artist
 
+	var HOME []Artist
 	er := json.NewDecoder(data.Body).Decode(&HOME)
 	if er != nil {
-		fmt.Println("errrrrrrrr")
+		fmt.Println("Failed to decode data")
+		http.Error(w, "Failed to decode data", http.StatusInternalServerError)
 		return
 	}
-	// for _, artist := range artiss {
-	// 	fmt.Printf("Artist Name: %s\n", artist.Name)
-	// 	fmt.Printf("Members: %v\n", artist.Members) // طبع الـmembers
-	// }
-	tmpl, _ := template.ParseFiles("web/home.html")
-	tmpl.Execute(w, HOME)
+
+	tmpl, err := template.ParseFiles("web/home.html")
+	if err != nil {
+		fmt.Println("Template Error:", err)
+		http.Error(w, "Template not found", http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, HOME)
+	if err != nil {
+		fmt.Println("Template Execution Error:", err)
+		http.Error(w, "Template execution failed", http.StatusInternalServerError)
+		return
+	}
 }
-
-
-// 		data, err := http.Get("https://groupietrackers.herokuapp.com/api/artists")
-	// 	if err != nil {
-	// 		http.Error(w,"rceive data", http.StatusInternalServerError)
-	// 		return
-	// 	}
-	// defer data.Body.Close()
-
-	//		data, err := http.Get("https://groupietrackers.herokuapp.com/api/artists")
-	//	if err != nil {
-	//		http.Error(w,"rceive data", http.StatusInternalServerError)
-	//		return
-	//	}
-	//
-	// defer data.Body.Close()
